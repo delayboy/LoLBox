@@ -15,7 +15,10 @@ const getMatchList = async (puuid: string, begIndex: string, endIndex: string): 
 
 const timestampToDate = (timestamp: number) => {
   var date = new Date(timestamp)
-  return (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-' + date.getDate()
+  const year = String(date.getFullYear()).slice(-2) 
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}/${month}/${day}`
 }
 
 

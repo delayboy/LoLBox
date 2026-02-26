@@ -73,7 +73,7 @@ export default function ({page,handleChange,localSumId,sumId,matchMode,handleSel
       const notice:NoticeTypes = {
         gameflow: '',
         is_party: false,
-        is_muted: true,
+        is_muted: false,
         sumId: '',
       }
       setNotice(notice);
@@ -111,11 +111,16 @@ export default function ({page,handleChange,localSumId,sumId,matchMode,handleSel
     const binaryString = binaryData.reduce((data, byte) => data + String.fromCharCode(byte), '');
     console.log("game_flow",binaryString,g_cfg);
     if(binaryString=='"ReadyCheck"'){
-      await sleep(5000);
-      const res: any = await invoke('get_json_res', { url: '/lol-matchmaking/v1/ready-check' });
-      if (res?.playerResponse !== 'Declined') {
-        await invoke('post_json_res', { url: '/lol-matchmaking/v1/ready-check/accept',body:'' })
+      if(g_cfg.muted){
+       console.log("跳过自动对局接收");
+      }else{
+        await sleep(5000);
+        const res: any = await invoke('get_json_res', { url: '/lol-matchmaking/v1/ready-check' });
+        if (res?.playerResponse !== 'Declined') {
+          await invoke('post_json_res', { url: '/lol-matchmaking/v1/ready-check/accept',body:'' })
+        }
       }
+     
     }
     else if(binaryString=='"InProgress"'){
       await sleep(5000);
@@ -146,7 +151,7 @@ export default function ({page,handleChange,localSumId,sumId,matchMode,handleSel
     g_cfg.muted=event.target.checked;
     setSendConfig({...g_cfg});
     notice.gameflow = "clipboard";
-    notice.is_muted =g_cfg.muted;
+    //notice.is_muted =g_cfg.muted;
     notice.is_party = g_cfg.party;
     setNotice({...notice});
     onOpen();
@@ -156,7 +161,7 @@ export default function ({page,handleChange,localSumId,sumId,matchMode,handleSel
     g_cfg.party=event.target.checked;
     setSendConfig({...g_cfg});
     notice.gameflow = "clipboard";
-    notice.is_muted =g_cfg.muted;
+    //notice.is_muted =g_cfg.muted;
     notice.is_party = g_cfg.party;
     setNotice({...notice});
     onOpen();
@@ -168,7 +173,7 @@ export default function ({page,handleChange,localSumId,sumId,matchMode,handleSel
 
     notice.gameflow = binaryString;
     notice.sumId = String(sumId);
-    notice.is_muted =g_cfg.muted;
+    //notice.is_muted =g_cfg.muted;
     notice.is_party = g_cfg.party;
     setNotice({...notice});
     onOpen();

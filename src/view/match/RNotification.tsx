@@ -333,26 +333,28 @@ export default function ({ notice, onCloseInput }: { notice: NoticeTypes, onClos
      if(currentId==value.summonerId)  color = '#188300';
      return (
      <div key={index} className='flex-col flex'style={{paddingRight:'1px',paddingLeft:'1px'}}>
-       <div className='flex-row flex' style={{backgroundColor:backgroundColor,width:'90px'}}>
+       <div className='flex-row flex' style={{backgroundColor:backgroundColor,width:'98px'}}>
          <Image className='rounded' boxSize='45px' src={value.internalName} onClick={()=>{onClose();alterToSumId(value.summonerId);}}/>
          <span className="id-container"style={{height:'50px'}}><p style={{width:'45px',fontSize:value.displayName!==undefined&&value.displayName.length>4?'15px':'17px',fontWeight:'bold',color:color,backgroundColor:backgroundColor}} > {`${value.displayName} `} </p></span>
         </div>
-        <span style={{width:'90px',fontSize:'10px',color:color,backgroundColor:backgroundColor}}>{` ${value.score}分 ${value.winRate}%`}</span>
-        <span style={{width:'90px',fontSize:'10px',color:color,backgroundColor:backgroundColor}}>{` ${value.horse}`}</span>
-        <span style={{width:'90px',fontSize:'10px',color:color,backgroundColor:backgroundColor}}>{` id:${value.gameName}`}</span>
-        <span style={{width:'90px',fontSize:'10px',color:color,backgroundColor:backgroundColor}}>{` (${inBlackList})`}</span>
+        <span style={{width:'98px',fontSize:'10px',color:color,backgroundColor:backgroundColor}}>{` ${value.score}分 ${value.winRate}%`}</span>
+        <span style={{width:'98px',fontSize:'10px',color:color,backgroundColor:backgroundColor}}>{` ${value.horse}`}</span>
+        <span style={{width:'98px',fontSize:'10px',color:color,backgroundColor:backgroundColor}}>{` id:${value.gameName}`}</span>
+        <span style={{width:'98px',fontSize:'10px',color:color,backgroundColor:backgroundColor}}>{` (${inBlackList})`}</span>
          {matchList.map((match,i)=>{
            return (
            <div  onClick={()=>{onClose();alterToSumId(value.summonerId);handleMatchList(matchList,i)}}  key={index*20+i} className='flex-row flex' style={{paddingBottom:'1px',paddingTop:'1px'}}>
-            <Image className='rounded' boxSize='22px' src={getImgUrl(match.champId)}/>
+            <Image className='rounded' boxSize='30px' src={getImgUrl(match.champId)}/>
             <Tag
              size={'sm'}
              variant={match.isWin?'NInfo':'NError'}
-             style={{height:'22px',width:'68px',
-               justifyContent:'center',fontSize:'12px'}}>
+             style={{height:'30px',width:'68px',
+               justifyContent:'center',fontSize:'12px',flexDirection:'column'}}>
 
-             {match.gameModel[0]}-{match.kills}-{match.deaths}-{match.assists}
+             <p>{match.gameModel[0]}-{match.kills}-{match.deaths}-{match.assists}</p>
+             <p style={{fontSize:'9px',width:'100%',textAlign:'right'}}>{match.matchTime}</p>
            </Tag>
+           
            </div>
           
            )

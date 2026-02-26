@@ -2,7 +2,7 @@
     height: 22px;
     width: 54px;
     justify-content: center;
-    fontSize: 12px
+    font-size: 11px !important;
 }
 
 .defaultMatch {

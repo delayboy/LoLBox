@@ -46,7 +46,7 @@
     transform: scale(1.15) rotate(720deg);
 }
 .rankTag {
-    width:85px;
+    width:80px;
     height: 34px;
     font-size:14px !important;
     justify-content: center;

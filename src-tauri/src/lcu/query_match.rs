@@ -245,5 +245,5 @@ fn query_game_type(queue_id:i64) -> String{
 
 fn format_timestamp(timestamp:i64) ->String{
     let dt = Utc.timestamp_millis_opt(timestamp);
-    dt.unwrap().format("%m-%d").to_string()
+    dt.unwrap().format("%y-%m-%d").to_string()
 }
