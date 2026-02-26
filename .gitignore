@@ -26,3 +26,5 @@ pnpm-lock.yaml
 *.njsproj
 *.sln
 *.sw?
+/帮助文档
+一键喊话文档参考lol-helper-master.zip

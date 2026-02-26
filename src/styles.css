@@ -9,14 +9,14 @@
 
 :root {
   font-size: 16px;
-  //line-height: 24px;
+  /*line-height: 24px;
   //font-weight: 400;
   //font-synthesis: none;
   //text-rendering: optimizeLegibility;
   //-webkit-font-smoothing: antialiased;
   //-moz-osx-font-smoothing: grayscale;
   //-webkit-text-size-adjust: 100%;
-  background: #f5f5f5;
+  background: #f5f5f5;*/
 }
 ::-webkit-scrollbar {
   width: 0;
@@ -44,4 +44,11 @@ span,p,div {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+.id-container {
+  overflow-y: hidden;      /* 默认隐藏溢出内容 */
+}
+.id-container:hover {
+  overflow-y: visible;      /* 当鼠标悬停时显示溢出内容 */
+  z-index: 10;/* 提高层级，使其在其他元素之上 */
 }

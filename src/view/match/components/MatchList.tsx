@@ -13,8 +13,10 @@ export default function ({matchList,matchIndex,setGameId}:{matchList:MatchList[]
     }else {
       stylyPadding = {padding:'10px 0px 11px 0px'}
     }
+    let backgroundColor = "#ffff";
+    if(matchIndex===index) backgroundColor="#a9e1f45e"
     return (
-      <Tr key={index}>
+      <Tr key={index} style={{background:backgroundColor}}>
         <td onClick={() => {setGameId(match.gameId,index)}}>
           <div style={stylyPadding} className="flex justify-between">
           <Image className='rounded'
@@ -62,5 +64,13 @@ export default function ({matchList,matchIndex,setGameId}:{matchList:MatchList[]
 }
 
 const getImgUrl = (champId:string) => {
-  return `https://game.gtimg.cn/images/lol/act/img/champion/${champDict[champId].alias}.png`
+  let img_url = champDict['-1'].img_path;
+    if (champDict[champId]!==undefined){
+      img_url = champDict[champId].img_path;
+
+    }else{
+      console.log("不存在英雄",champId)
+    }
+
+  return img_url
 }

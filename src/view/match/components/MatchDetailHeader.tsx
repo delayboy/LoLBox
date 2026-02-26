@@ -3,15 +3,21 @@ import {
   Tbody,
   Tr,
   TableContainer,
+  Select,
 } from '@chakra-ui/react'
 import "../css/match.css"
+import { useState } from 'react'
 
-export default function ({title,showTypeValue,switchFun}: {title:string[],showTypeValue:string,switchFun:Function}) {
+export default function ({title,showTypeValue,switchFun,defaultIndex}: {title:string[],showTypeValue:string[][],switchFun:Function,defaultIndex:number}) {
   const winState = {
     isOne:Number(title[6])>Number(title[7]),
     score:(Math.abs(Number(title[6])-Number(title[7])).toFixed(1))
   }
-
+  const [switchValue,setSwitchValue] = useState(defaultIndex);
+  const handleSelect =(event:any) => {
+    switchFun(event.target.value)
+    setSwitchValue(event.target.value)
+  }
   return (
     <div>
       <TableContainer>
@@ -32,7 +38,13 @@ export default function ({title,showTypeValue,switchFun}: {title:string[],showTy
               </td>
               <td>
                 <div>数据显示</div>
-                <div className='showType' onClick={() => {switchFun()}}>{showTypeValue}</div>
+                <Select className='showType' value={switchValue}  onChange={handleSelect}
+                  variant='filled' size='xs'  height={'20px'}>
+                {showTypeValue.map((value,index)=>{
+                  return ( <option key={index} value={index}>{value[1]}</option>)
+                })}
+                </Select>
+     
               </td>
               <td>
                 <div>双方比分</div>

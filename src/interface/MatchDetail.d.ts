@@ -1,7 +1,8 @@
+export type ShowTypeKeyListType = 'totalDamageDealtToChampions' | 'totalDamageTaken' | 'goldEarned' | 'visionScore' | 'totalMinionsKilled'|'score';
 export interface MatchItem {
   isLeft: boolean
   detailInfo: SummonerDetailInfo[],
-  showTypeKey: 'totalDamageDealtToChampions' | 'totalDamageTaken' | 'goldEarned' | 'visionScore' | 'totalMinionsKilled',
+  showTypeKey: ShowTypeKeyListType,
   showTypeIndex: number,
   querySumDetail: Function
 }
@@ -37,6 +38,7 @@ interface Player {
   summonerId: number;
   summonerName: string;
   gameName: string;
+  tagLine: number = 31994;
 }
 
 export interface ParticipantIdentity {
@@ -310,6 +312,7 @@ export interface MaxMatchData {
   goldEarned: number;
   totalDamageTaken: number;
   visionScore: number;
+  score:number;
 }
 
 export interface ShowDataTypes {
@@ -317,5 +320,6 @@ export interface ShowDataTypes {
   totalDamageTaken: number,
   goldEarned: number,
   visionScore: number,
-  totalMinionsKilled: number
+  totalMinionsKilled: number,
+  score:string|number;
 }

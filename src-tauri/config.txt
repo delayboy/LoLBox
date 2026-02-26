@@ -1,0 +1,1 @@
+{"auto":true,"muted":false,"party":true,"inital_zoom":100,"excludeChampDic":{"瘟疫之源":"老鼠","残月之肃":"吴亦凡","皎月女神":"黛安娜","封魔剑魂":"永恩","虚空掠夺者":"螳螂"}}

@@ -188,7 +188,18 @@ impl MatchStruct {
         if len == 0 { return match_vec }
 
         for game in self.is_rev(self.games.games.clone(),len) {
-            if game.queueId == queue_id {
+            let mut add_to_list: bool = false;
+            if queue_id==1234 && (game.queueId==420||game.queueId==440) {
+               add_to_list = true;
+            }
+            else if queue_id==4321 &&  (game.queueId==420||game.queueId==440||game.queueId==430)
+            {
+                add_to_list=true;
+            }
+            else if game.queueId == queue_id {
+                add_to_list=true;
+            }
+            if add_to_list{
                 let match_list = MatchList {
                     gameId:game.gameId.to_string(),
                     champId:game.participants[0].championId,
@@ -202,7 +213,7 @@ impl MatchStruct {
                     // 游戏时间
                     matchTime: format_timestamp(game.gameCreation),
                     // 游戏模式
-                    gameModel:query_game_type(queue_id)
+                    gameModel:query_game_type(game.queueId)
                 };
                 match_vec.push(match_list);
             }

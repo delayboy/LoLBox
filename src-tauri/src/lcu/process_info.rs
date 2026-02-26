@@ -41,7 +41,7 @@ const TARGET_PROCESS: &str = "LeagueClientUx.exe";
 pub(crate) fn get_auth_info() -> Result<(String, String), ProcessInfoError> {
     let mut sys = System::new_all();
     sys.refresh_processes();
-
+   
     let args = sys
         .processes()
         .values()

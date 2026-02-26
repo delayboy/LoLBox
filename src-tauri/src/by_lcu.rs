@@ -5,48 +5,105 @@ use query_match::MatchList;
 use lazy_static::lazy_static;
 use std::time::{SystemTime, UNIX_EPOCH};
 use crate::{lcu::invoke_lcu,lcu::query_match};
+use std::sync::Once;
+// lazy_static!{
+//     static ref REST_CLIENT:RESTClient = RESTClient::new().unwrap();
 
 
-lazy_static!{
-    static ref REST_CLIENT:RESTClient = RESTClient::new().unwrap();
-}
-
+// }
+static mut REST_CLIENT: Option<RESTClient> = None;
+static INIT: Once = Once::new();
 
 #[command]
 pub fn is_lcu_success() -> bool {
     let client =RESTClient::new();
     if client.is_ok() {
-        true
+        unsafe {
+            REST_CLIENT = Some(RESTClient::new().unwrap());
+            REST_CLIENT.is_some()
+        }
+        //true
     }else {
         false
     }
-}
+ 
 
+    
+}
+#[command]
+pub async fn get_binary_res(url:String) -> Result<Vec<u8>, String> {
+    //let client: &RESTClient = &*REST_CLIENT;
+    let client = unsafe {
+        REST_CLIENT.as_ref().ok_or("REST_CLIENT not initialized")?
+    };
+    let url: String = format!("{}", url).to_string();
+    match client.get_binary(url).await {
+        Ok(res) => Ok(res),
+        Err(e) =>  Err(format!("Unable to write to file: {}", e)),
+    }
+}
+#[command]
+pub async fn get_json_res(url:String) -> Result<Value, String> {
+    //let client = &*REST_CLIENT;
+    let client = unsafe {
+        REST_CLIENT.as_ref().ok_or("REST_CLIENT not initialized")?
+    };
+    let url = format!("{}", url).to_string();
+    let res =  client.get(url).await.unwrap();
+    Ok(res)
+}
+#[command]
+pub async fn post_json_res(url:String,body:String) -> Result<Vec<u8>, String> {
+    //let client = &*REST_CLIENT;
+    let client = unsafe {
+        REST_CLIENT.as_ref().ok_or("REST_CLIENT not initialized")?
+    };
+    let url = format!("{}", url).to_string();
+    let res =  client.post(url,body).await.unwrap();
+    Ok(res)
+}
 #[command]
 pub async fn get_cur_sum() -> Result<Value, String> {
-    let client = &*REST_CLIENT;
-    let res =  client.get("/lol-summoner/v1/current-summoner".to_string()).await.unwrap();
-    Ok(res)
+    //let client = &*REST_CLIENT;
+    let client = unsafe {
+        REST_CLIENT.as_ref().ok_or("REST_CLIENT not initialized")?
+    };
+    println!("MY RES OVER!");
+    match  client.get("/lol-summoner/v1/current-summoner".to_string()).await {
+        Ok(res) => Ok(res),
+        Err(e) =>  Err(format!("Unable to write to file: {}", e))
+    }//.unwrap();
+
+    //Ok(res)
 }
 
 #[command]
 pub async fn get_other_sum(summoner_id:String) -> Result<Value, String> {
-    let client = &*REST_CLIENT;
+    //let client = &*REST_CLIENT;
+    let client = unsafe {
+        REST_CLIENT.as_ref().ok_or("REST_CLIENT not initialized")?
+    };
     let url = format!("/lol-summoner/v1/summoners/{}", summoner_id).to_string();
     let res =  client.get(url).await.unwrap();
     Ok(res)
 }
 #[command]
 pub async fn get_other_sum_by_name(name:String) -> Result<Value, String> {
-    let client = &*REST_CLIENT;
-    let url = format!("/lol-summoner/v1/summoners?name={}", name).to_string();
+    //let client = &*REST_CLIENT;
+    let client = unsafe {
+        REST_CLIENT.as_ref().ok_or("REST_CLIENT not initialized")?
+    };
+    let url = format!("/lol-summoner/v1/summoners?name={}", name.replace("#", "%23")).to_string();
     let res =  client.get(url).await.unwrap();
     Ok(res)
 }
 
 #[command]
 pub async fn get_cur_rank_point(puuid:String) -> Result<Value, String> {
-    let client = &*REST_CLIENT;
+    //let client = &*REST_CLIENT;
+    let client = unsafe {
+        REST_CLIENT.as_ref().ok_or("REST_CLIENT not initialized")?
+    };
     let url = format!("/lol-ranked/v1/ranked-stats/{}", puuid).to_string();
     let res = match client.get(url).await {
         Ok(result) => result,
@@ -57,14 +114,20 @@ pub async fn get_cur_rank_point(puuid:String) -> Result<Value, String> {
 
 #[command]
 pub async fn get_excel_champ(summoner_puuid:String) -> Result<Value, String> {
-    let client = &*REST_CLIENT;
+    //let client = &*REST_CLIENT;
+    let client = unsafe {
+        REST_CLIENT.as_ref().ok_or("REST_CLIENT not initialized")?
+    };
     let url = format!("/lol-champion-mastery/v1/{}/champion-mastery", summoner_puuid).to_string();
     let res =  client.get(url).await.unwrap();
     Ok(res)
 }
 #[command]
 pub async fn get_match_list(puuid:String,beg_index:String,end_index:String) -> Result<Value, String> {
-    let client = &*REST_CLIENT;
+    //let client = &*REST_CLIENT;
+    let client = unsafe {
+        REST_CLIENT.as_ref().ok_or("REST_CLIENT not initialized")?
+    };
     let url = format!("/lol-match-history/v1/products/lol/{}/matches?begIndex={}&endIndex={}", puuid,beg_index,end_index).to_string();
     let res = match client.get(url).await {
         Ok(result) => result,
@@ -74,7 +137,10 @@ pub async fn get_match_list(puuid:String,beg_index:String,end_index:String) -> R
 }
 #[command]
 pub async fn get_match_detail(game_id:String) -> Result<Value, String> {
-    let client = &*REST_CLIENT;
+    //let client = &*REST_CLIENT;
+    let client = unsafe {
+        REST_CLIENT.as_ref().ok_or("REST_CLIENT not initialized")?
+    };
     let url = format!("/lol-match-history/v1/games/{}", game_id).to_string();
     let res =  client.get(url).await.unwrap();
     Ok(res)
@@ -93,10 +159,13 @@ pub fn get_notice() -> Result<Value,String> {
 
 #[command]
 pub async fn get_special_match(puuid:String,queue_id:i64) -> Result<Vec<MatchList>,String > {
-    let client = &*REST_CLIENT;
+    //let client = &*REST_CLIENT;
+    let client = unsafe {
+        REST_CLIENT.as_ref().ok_or("REST_CLIENT not initialized")?
+    };
     let mut match_vec:Vec<MatchList> = Vec::new();
-    for i in 0..=4 {
-        let url = format!("/lol-match-history/v1/products/lol/{}/matches?begIndex={}&endIndex={}",puuid,i*20,(i+1)*20);
+    for i in 0..=9 {
+        let url = format!("/lol-match-history/v1/products/lol/{}/matches?begIndex={}&endIndex={}",puuid,i*20,(i+1)*20-1);
         let match_s=client.get_match_list(url).await;
         if match_s.is_ok() {
             match_vec.extend(match_s.unwrap().get_simple_match(queue_id));

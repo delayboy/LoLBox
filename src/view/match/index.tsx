@@ -9,8 +9,10 @@ import {SumInfoRes} from "../../interface/SummonerInfo";
 import {querySummonerInfo} from "../../utils/getSumInfo";
 import MatchSumDetail from "./components/MatchSumDetail";
 import {SumDetail} from "../../interface/MatchDetail";
+import {tagTheme} from "../../utils/theme";
+import { ChakraProvider,extendTheme } from '@chakra-ui/react'
 
-export const AlterToSumId = createContext((sumId: number) => {})
+export const AlterToSumId = createContext((sumId: number) => {console.log("default alter")})
 
 export const Match = () =>  {
   const localSumId = useRef(0)
@@ -21,13 +23,19 @@ export const Match = () =>  {
   const [matchMode,setMatchMode] = useState('0')
   const { isOpen, onOpen, onClose } = useDisclosure()
   const btnRef = useRef(null)
-
+  const theme = extendTheme({
+    components: {
+      Tag: tagTheme
+    }
+  })
   useEffect(() => {
     const fetchSumInfo = async () => {
       const sumInfo: SumInfoRes = await querySummonerInfo(sumId)
       if (sumId === 0) {
         localSumId.current = sumInfo.sumInfo.currentId
       }
+      
+      
       setSumInfoProps(sumInfo)
       setPage(1)
       setMatchMode('0')
@@ -57,6 +65,7 @@ export const Match = () =>  {
   }
 
   return (
+    <ChakraProvider theme={theme}>
     <AlterToSumId.Provider value={setSetSumId}>
       <div className="main p-3 overflow-hidden">
         <Grid
@@ -81,7 +90,7 @@ export const Match = () =>  {
           </GridItem>
           <GridItem area={'nav'}>
             <RMatchHistory sumId={sumInfoProps.sumInfo.currentId} puuid={sumInfoProps.sumInfo.puuid} openSumDetailDrawer={openSumDetailDrawer}
-                           begIndex={String((page-1)*9)} endIndex={String(page*9)} matchMode={matchMode}/>
+                           begIndex={String((page-1)*9)} endIndex={String(page*9-1)} matchMode={matchMode}/>
           </GridItem>
         </Grid>
       </div>
@@ -102,5 +111,6 @@ export const Match = () =>  {
       </Drawer>
 
     </AlterToSumId.Provider>
+    </ChakraProvider>
   )
 }

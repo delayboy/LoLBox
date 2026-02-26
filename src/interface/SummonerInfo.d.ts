@@ -1,6 +1,7 @@
 export interface lcuSummonerInfo {
   accountId: number;
   displayName: string;
+  gameName:string;
   internalName: string;
   nameChangeFlag: boolean;
   percentCompleteForNextLevel: number;
@@ -13,8 +14,12 @@ export interface lcuSummonerInfo {
   unnamed: boolean;
   xpSinceLastLevel: number;
   xpUntilNextLevel: number;
+  tagLine: number;
   httpStatus?: number;
-  gameName:string
+  inWitchTeam:number = 0;
+  horse:string = '';
+  score:number = 0;
+  winRate:string = '';
 }
 
 interface SumReslut {
@@ -25,6 +30,9 @@ interface SumReslut {
   xpNL: number;
   puuid: string;
   currentId: number;
+  horse:string = '';
+  score:number = 0;
+  displayName:string = '';
 }
 
 interface ExcelChamp {
@@ -41,12 +49,11 @@ export interface SumInfoRes {
 }
 
 export interface NoticeTypes {
-  button_content: string;
-  content: string;
-  is_button: boolean;
-  is_show: boolean;
-  url: string;
-  variant: string;
+  gameflow: string;
+  is_party: boolean;
+  is_muted: boolean;
+  sumId: string;
+
 }
 
 export interface HeaderTypes {

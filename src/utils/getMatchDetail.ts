@@ -8,6 +8,7 @@ import {
   MaxMatchData,Stat,ShowDataTypes,ParticipantIdentity
 } from "../interface/MatchDetail"
 import {queryGameType,getspellImgUrl,getItemImgUrl} from "../utils/tool"
+import { analyseSingleMatch } from './getMatchInfo';
 
 export class MatchDetails {
   private team100Kills = 0
@@ -65,9 +66,23 @@ export class MatchDetails {
       this.team100Kills += participants[i].stats.kills;this.team200Kills += participants[i + 5].stats.kills
       this.team100GoldEarned += participants[i].stats.goldEarned;this.team200GoldEarned += participants[i+5].stats.goldEarned
 
-      participantsInfo.teamOne.push(this.analyticalData(participants[i],nameList[i],gameId,maxMatchData,sumId))
-      participantsInfo.teamTwo.push(this.analyticalData(participants[i+5],nameList[i+5],gameId,maxMatchData,sumId))
+      participantsInfo.teamOne.push(this.analyticalData(res,participants[i],nameList[i],gameId,maxMatchData,sumId))
+      participantsInfo.teamTwo.push(this.analyticalData(res,participants[i+5],nameList[i+5],gameId,maxMatchData,sumId))
     }
+    let max_score = 1;
+    for(const detailInfo of participantsInfo.teamOne){
+      if( detailInfo.score>max_score) max_score=detailInfo.score;
+    }
+    for(const detailInfo of participantsInfo.teamTwo){
+      if( detailInfo.score>max_score) max_score=detailInfo.score;
+    }
+    for(const detailInfo of participantsInfo.teamOne){
+      detailInfo.showDataDict.score = this.computePercent(max_score,detailInfo.score);
+    }
+    for(const detailInfo of participantsInfo.teamTwo){
+      detailInfo.showDataDict.score = this.computePercent(max_score,detailInfo.score);
+    }
+
     participantsInfo.teamOne[this.queryMvpIndex(participantsInfo.teamOne).index].isMvp = true
     participantsInfo.teamTwo[this.queryMvpIndex(participantsInfo.teamTwo).index].isMvp = true
 
@@ -76,7 +91,7 @@ export class MatchDetails {
     return participantsInfo
   }
   // 解析对局数据
-  private analyticalData  = (participant:Participant,nameList: {name: string, summonerId: number},gameId:string,maxMatchData:MaxMatchData,sumId:number):SummonerDetailInfo => {
+  private analyticalData  = (gameDetail:GameDetailedInfo,participant:Participant,nameList: {name: string, summonerId: number},gameId:string,maxMatchData:MaxMatchData,sumId:number):SummonerDetailInfo => {
     var iconList = this.getIconList(participant.stats,maxMatchData)
     if (participant.stats.firstBloodKill){
       iconList.push('firstBlood')
@@ -93,14 +108,23 @@ export class MatchDetails {
     if (participant.stats.largestKillingSpree>=8){
       iconList.push('god')
     }
+    let role =  participant.timeline.lane+'-'+participant.timeline.role;
+    let score = Math.round(analyseSingleMatch(new Map(),gameDetail,participant,gameDetail.gameDuration,role));
     var showDataDict:ShowDataTypes = this.getShowDataPercent(maxMatchData,{totalDamageDealtToChampions:participant.stats.totalDamageDealtToChampions,
       totalDamageTaken:participant.stats.totalDamageTaken,
       goldEarned:participant.stats.goldEarned,
       visionScore:participant.stats.visionScore,
-      totalMinionsKilled:participant.stats.totalMinionsKilled+participant.stats.neutralMinionsKilled
+      totalMinionsKilled:participant.stats.totalMinionsKilled+participant.stats.neutralMinionsKilled,
+      score:score,
     })
+    // `images/lol/act/img/champion/${champDict[participant.championId].alias}.png`
+    let img_url = champDict['-1'].img_path;
+    if (champDict[participant.championId]!==undefined){
+      img_url = champDict[participant.championId].img_path;
 
-
+    }else{
+      console.log("不存在英雄",participant.championId)
+    }
     return{
       name: nameList.name,
       gameId:gameId,
@@ -108,7 +132,7 @@ export class MatchDetails {
       isCurSum:nameList.summonerId===sumId?true:false,
       teamType: participant.teamId,
       champLevel:participant.stats.champLevel,
-      champImgUrl: `https://game.gtimg.cn/images/lol/act/img/champion/${champDict[participant.championId].alias}.png`,
+      champImgUrl: img_url,
       spell1Id:getspellImgUrl(participant.spell1Id),
       spell2Id:getspellImgUrl(participant.spell2Id),
       item0:getItemImgUrl(participant.stats.item0),
@@ -148,7 +172,7 @@ export class MatchDetails {
         participant.stats.perk3,participant.stats.perk4,participant.stats.perk5],
       totalMinionsKilled:participant.stats.totalMinionsKilled+participant.stats.neutralMinionsKilled,
       iconList:iconList,
-      score: this.analyseSingleMatch(participant.stats),
+      score: score,
       isWin:participant.stats.win,
       isMvp:false,
       showDataDict:showDataDict
@@ -159,15 +183,16 @@ export class MatchDetails {
     let dataList = []
     for (const participantIdentity of participantIdentities) {
       dataList.push({
-        name: participantIdentity.player.gameName||participantIdentity.player.summonerName,
+        name: participantIdentity.player.gameName + '#' + participantIdentity.player.tagLine,
         summonerId:participantIdentity.player.summonerId})
     }
     return dataList
   }
   // 获取当前页面顶部详细数据
   private getDetailsTitle = (creation:number,duration:number,queueId:number) => {
-    const createTime = (new Date(creation).toLocaleString()).split(' ')
-    const dateStr = createTime[0].slice(5)
+    //使用24小时来显示时间戳
+    const createTime = (new Date(creation).toLocaleString('zh-CN', { hourCycle: "h24" })).split(' ')
+    const dateStr = createTime[0].slice(0)
     const timeStr = createTime[1].slice(0, 5)
     const lane = queryGameType(queueId)
     const gameDuration = ((duration) / 60).toFixed(0)
@@ -212,7 +237,8 @@ export class MatchDetails {
       totalMinionsKilled: 0,
       goldEarned: 0,
       totalDamageTaken: 0,
-      visionScore:0
+      visionScore:0,
+      score:100,
     })
   }
   // 获取对于的最大数据图标
@@ -238,7 +264,7 @@ export class MatchDetails {
     return iconList
   }
   // 通过分析数据得出单场得分情况
-  private analyseSingleMatch = (match: Stat):number => {
+  private now_use_analyseSingleMatch = (match: Stat):number => {
     let score = 10
     if (match['firstBloodKill']) {
       score += 5
@@ -264,7 +290,7 @@ export class MatchDetails {
   }
   // 根据最高数据算出百分比
   private computePercent = (max:number, cur:number) => {
-    if (max === 0 || cur === 0) {
+    if (max === 0 || cur <= 0) {
       return '0%'
     }
     return Math.round(cur / max * 10000) / 100 + "%"
@@ -287,7 +313,7 @@ export class MatchDetails {
       const result = []
       const maxMatchData = this.getMaxField(participants)
       for (let i = 0; i < nameList.length; i++) {
-        result.push(this.analyticalData(participants[i],nameList[i],gameId,maxMatchData,sumId))
+        result.push(this.analyticalData(res,participants[i],nameList[i],gameId,maxMatchData,sumId))
       }
       result.sort((a, b) => b.goldEarned - a.goldEarned)
 

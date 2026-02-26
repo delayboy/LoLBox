@@ -8,17 +8,17 @@
   },
   "package": {
     "productName": "Record",
-    "version": "1.1.9"
+    "version": "1.1.5"
   },
   "tauri": {
     "allowlist": {
-      "all": false,
+      "all": true,
       "shell": {
-        "all": false,
+        "all": true,
         "open": true
       },
       "window": {
-        "all": false,
+        "all": true,
         "close": true,
         "hide": true,
         "show": true,
@@ -38,6 +38,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
+      "resources": ["MyRecordDll.dll","clipboard.txt","config.txt"],
       "identifier": "com.record.dev",
       "targets": "all"
     },
@@ -52,12 +53,13 @@
         "title": "Record",
         "label": "Record",
         "fullscreen": false,
-        "resizable": false,
+        "resizable": true,
         "decorations": false,
         "center": true,
         "width": 1166,
         "height": 650
       }
     ]
+    
   }
 }

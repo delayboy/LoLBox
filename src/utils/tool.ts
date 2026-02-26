@@ -1,3 +1,5 @@
+import { get_item_img, get_spell_img } from "../assets/champList";
+
 // 英文段位昵称转中文
 export const englishToChinese = (tier:string) => {
   switch (tier) {
@@ -11,7 +13,6 @@ export const englishToChinese = (tier:string) => {
     case 'SILVER' :return '白银';
     case 'BRONZE' :return '青铜';
     case 'IRON' :return '黑铁';
-    default: return '未知'
   }
 }
 
@@ -28,45 +29,19 @@ export const queryGameType = (queueId:number) => {
     case 440 : return '灵活排位';
     case 450 : return '极地乱斗';
     case 1700 : return '斗魂竞技场';
-    case 1900 :
-      return '无限火力';
-    case 1820 :
-      return '无尽狂潮';
-    case 1810 :
-      return '无尽狂潮';
-    case 1830 :
-      return '无尽狂潮';
-    case 1840 :
-      return '无尽狂潮';
   }
   return '其它模式'
 }
 
 // 通过召唤师id获取召唤师图片地址
 export const getspellImgUrl = (spellId:number) => {
-  switch (spellId) {
-    case 4:return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_flash.png';
-    case 14:return 'https://game.gtimg.cn/images/lol/act/img/spell/SummonerIgnite.png';
-    case 11:return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_smite.png';
-    case 6:return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_haste.png';
-    case 12:return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_teleport.png';
-    case 21:return 'https://game.gtimg.cn/images/lol/act/img/spell/SummonerBarrier.png';
-    case 3:return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_exhaust.png';
-    case 1:return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_boost.png';
-    case 7:return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_heal.png';
-    case 32:return 'https://game.gtimg.cn/images/lol/act/img/spell/Summoner_Mark.png'
-  }
-  return 'https://game.gtimg.cn/images/lol/act/img/spell/SummonerMana.png'
+  return get_spell_img(spellId);
+  //return 'https://game.gtimg.cn/images/lol/act/img/spell/SummonerMana.png'
 }
 
 // 通过物品id获取图片地址
 export const getItemImgUrl = (item:number) => {
-
-  if (item == 0){
-    return new URL("/src/assets/img/image.png", import.meta.url).href
-  }else {
-    return `https://game.gtimg.cn/images/lol/act/img/item/${item}.png`
-  }
+  return get_item_img(item);
 }
 
 export const iconDict:{ [key: string]: string } = {

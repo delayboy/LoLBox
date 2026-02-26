@@ -1,3 +1,10 @@
+interface MyGameScoreInfo{
+  score:number;
+  horse:string;
+  matchList:MatchList[];
+  winRate: number;
+  playWithSet:Map<number,number>;
+}
 interface Player {
   accountId: number;
   currentAccountId: number;

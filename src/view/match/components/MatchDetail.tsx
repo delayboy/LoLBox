@@ -1,16 +1,18 @@
 import MatchDetailItem from "./MatchDetailItem";
 import MatchDetailHeader from "./MatchDetailHeader";
 import {useRef, useState} from "react";
-import {ParticipantsInfo} from "../../../interface/MatchDetail";
+import {ParticipantsInfo, ShowTypeKeyListType} from "../../../interface/MatchDetail";
 
-export default function ({participantsInfo,openDrawer}:{participantsInfo:ParticipantsInfo,openDrawer:Function}) {
-  const arr = [['totalDamageDealtToChampions','输出伤害'],['totalDamageTaken','承受伤害'],['goldEarned','商店存款'],['visionScore','视野得分'],['totalMinionsKilled','击杀小兵']]
-  const [showType,setShowType] = useState(['totalDamageDealtToChampions','输出伤害'] as any)
-  const showTypeIndex= useRef(0)
+export default function ({participantsInfo,openDrawer,typeIndex,typeIndexChange}:{participantsInfo:ParticipantsInfo,openDrawer:Function,typeIndex:number,typeIndexChange:any}) {
+  const arr:[ShowTypeKeyListType,string][] = [['totalDamageDealtToChampions','输出伤害'],['totalDamageTaken','承受伤害'],['goldEarned','商店存款'],['visionScore','视野得分'],['totalMinionsKilled','击杀小兵'],['score','综合评分']]
+  const [showTypeKey,setShowTypeKey] = useState(arr[typeIndex][0] as ShowTypeKeyListType)
+  const showTypeIndex= useRef(typeIndex)
 
-  const switchShowType = () => {
-    const rotatedIndex = (showTypeIndex.current += 1) % arr.length
-    setShowType(arr[rotatedIndex])
+  const switchShowType = (index:number) => {
+    //const rotatedIndex = (showTypeIndex.current += 1) % arr.length
+    showTypeIndex.current = index;
+    typeIndexChange(index);
+    setShowTypeKey(arr[index][0])
   }
 
   if (participantsInfo?.headerInfo?.length === 1){
@@ -26,12 +28,12 @@ export default function ({participantsInfo,openDrawer}:{participantsInfo:Partici
 
   return (
     <div className='flex flex-col h-full gap-y-10 slide-in-right'>
-      <MatchDetailHeader title={participantsInfo.headerInfo} showTypeValue={showType[1]} switchFun={switchShowType} />
+      <MatchDetailHeader defaultIndex={typeIndex} title={participantsInfo.headerInfo} showTypeValue={arr} switchFun={switchShowType} />
       <div className='grow'>
         <div className='matchContain'>
-          <MatchDetailItem showTypeIndex={showTypeIndex.current} isLeft={true} showTypeKey={showType[0]}
+          <MatchDetailItem showTypeIndex={showTypeIndex.current} isLeft={true} showTypeKey={showTypeKey}
                            detailInfo={participantsInfo.teamOne} querySumDetail={openDrawer}/>
-          <MatchDetailItem showTypeIndex={showTypeIndex.current} isLeft={false} showTypeKey={showType[0]}
+          <MatchDetailItem showTypeIndex={showTypeIndex.current} isLeft={false} showTypeKey={showTypeKey}
                            detailInfo={participantsInfo.teamTwo} querySumDetail={openDrawer}/>
         </div>
       </div>

@@ -19,6 +19,7 @@ export default function ({isLeft,detailInfo,showTypeKey,showTypeIndex,querySumDe
       ['获得金钱',personalGameDetails.goldEarned],
       ['视野得分',personalGameDetails.visionScore],
       ['放置守卫',personalGameDetails.wardsPlaced],
+      ['综合评分',personalGameDetails.score],
     ]
     const kda = personalGameDetails.kills+'-'+personalGameDetails.deaths +'-'+personalGameDetails.assists
     querySumRank(String(personalGameDetails.accountId)).then((rankData) => {

@@ -3,6 +3,8 @@ import {SumDetail} from "../../../interface/MatchDetail";
 import {useContext} from "react";
 import {AlterToSumId} from "../index";
 import {open} from "@tauri-apps/api/shell";
+import { customDetail } from "../RMatchHistory";
+import { get_perk_img } from "../../../assets/champList";
 
 export default function ({sumDetail,closeDrawer}:{sumDetail:SumDetail,closeDrawer:Function}) {
   const alterToSumId = useContext(AlterToSumId)
@@ -10,11 +12,12 @@ export default function ({sumDetail,closeDrawer}:{sumDetail:SumDetail,closeDrawe
     closeDrawer()
     setTimeout(() => {
       alterToSumId(summonerId)
+      customDetail.matchList = undefined;
     },180)
   }
 
   const runesImgEle = sumDetail.runesList.map((rune,index) => {
-    const imgUrl = new URL(`/src/assets/runes/${rune}.png`, import.meta.url).href
+    const imgUrl = get_perk_img(rune);//new URL(`/src/assets/runes/${rune}.png`, import.meta.url).href
     return (
       <div  key={index} style={{width:'30px',height:'30px'}}>
         <Image  src={imgUrl} />
@@ -46,7 +49,7 @@ export default function ({sumDetail,closeDrawer}:{sumDetail:SumDetail,closeDrawe
   const otherDataEle = sumDetail.listItemData.map((value, index) => {
     return (
       <tr key={index}>
-        <td style={{padding:'6px 0px'}}>
+        <td style={{padding:'4px 0px'}}>
           <div className="flex justify-between">
             <Tag
               size={'sm'}
@@ -98,8 +101,8 @@ export default function ({sumDetail,closeDrawer}:{sumDetail:SumDetail,closeDrawe
       {/*查询此人*/}
       <div className='flex justify-between' style={{marginTop:'10px'}}>
         <Button size={'sm'} style={{fontWeight:'400',height:'30px'}}
-                colorScheme='blue' onClick={() => {changeSumId(sumDetail.summonerId)}}>查看详细战绩</Button>
-        <Button onClick={() => {open('https://lolfrank.cn')}}
+                colorScheme='twitter' onClick={() => {changeSumId(sumDetail.summonerId)}}>查看详细战绩</Button>
+        <Button onClick={() => {changeSumId(sumDetail.summonerId)}}
           size={'sm'} colorScheme='red' style={{fontWeight:'400',height:'30px',
           backgroundColor:'#ff6666',color:'#fff'}}>了解更多功能</Button>
       </div>

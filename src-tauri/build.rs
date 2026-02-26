@@ -2,6 +2,8 @@
 extern crate embed_resource;
 
 fn main() {
+  println!("cargo:rustc-link-search=native=src-tauri");
+  println!("cargo:rustc-link-lib=dylib=MyRecordDll");
   tauri_build::build();
 
   #[cfg(target_os = "windows")]
