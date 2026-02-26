@@ -82,14 +82,7 @@ export const getGameScore = async (puuid:string):Promise<MyGameScoreInfo> => {
     let start  = String((page-1)*50);
     let endIndex= String(page*50-1);
     let matchList:LcuMatchList|null = null;
-    for(let n=0;n<5;n++){
-      matchList = await getMatchList(puuid,start,endIndex);
-      if(matchList==null||matchList.httpStatus==400) {
-        continue;
-      }else{
-        break;
-      }
-    }
+    matchList = await getMatchList(puuid,'0','200');
     if(matchList==null||matchList.httpStatus==400){
       if(matchCount>0) break;
       else {
@@ -108,7 +101,7 @@ export const getGameScore = async (puuid:string):Promise<MyGameScoreInfo> => {
       }
       
     }
-    page += 1;
+    page += 80;
   }
 
   let gameScore = 0;

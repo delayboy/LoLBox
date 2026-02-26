@@ -21,13 +21,19 @@ export default function ({ sumId, puuid, begIndex, endIndex, openSumDetailDrawer
   const [currentQueueId, setCurrentQueueId] = useState(0)
   const [showTypeIndex, setShowTypeIndex] = useState(0)
   const [matchIndex, setMatchIndex] = useState(0)
-  const specialMatch = useRef({ currentMode: '0', matchList: [] as MatchList[] })
+  const specialMatch = useRef({ puuid:'',currentMode: '0', matchList: [] as MatchList[] })
 
 
   useEffect(() => {
     const fetchMatchList = async () => {
-      const matchList = await queryMatchList(puuid, begIndex, endIndex)
+      if (specialMatch.current.puuid !== puuid) {
+        const matchListTemp = await queryMatchList(puuid, '0', '200');
+        specialMatch.current.puuid = puuid;
+        handleMatchList([], 'loading');
+        specialMatch.current.matchList = matchListTemp;
+      }
      
+      const matchList = specialMatch.current.matchList.slice(Number(begIndex), Number(endIndex)+ 1);
       if(customDetail.matchList!==undefined){
    
         handleMatchList(customDetail.matchList, 'none',customDetail.matchIndex);
@@ -41,7 +47,7 @@ export default function ({ sumId, puuid, begIndex, endIndex, openSumDetailDrawer
         handleMatchList([], 'loading');
         specialMatch.current.matchList = await invoke('get_special_match', { puuid: puuid, queueId: Number(matchMode) })
       }
-      const matchList = specialMatch.current.matchList.slice(Number(begIndex), Number(endIndex + 1))
+      const matchList = specialMatch.current.matchList.slice(Number(begIndex), Number(endIndex)+ 1)
    
       if(customDetail.matchList!==undefined){
    
@@ -52,7 +58,7 @@ export default function ({ sumId, puuid, begIndex, endIndex, openSumDetailDrawer
     if (matchMode !== '0') {
       fetchSpecialMatchList()
     } else {
-      specialMatch.current = { currentMode: '0', matchList: [] as MatchList[] }
+      specialMatch.current = { puuid:'',currentMode: '0', matchList: [] as MatchList[] }
       fetchMatchList()
     }
  

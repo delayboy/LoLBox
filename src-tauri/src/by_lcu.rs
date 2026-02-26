@@ -164,12 +164,13 @@ pub async fn get_special_match(puuid:String,queue_id:i64) -> Result<Vec<MatchLis
         REST_CLIENT.as_ref().ok_or("REST_CLIENT not initialized")?
     };
     let mut match_vec:Vec<MatchList> = Vec::new();
-    for i in 0..=9 {
-        let url = format!("/lol-match-history/v1/products/lol/{}/matches?begIndex={}&endIndex={}",puuid,i*20,(i+1)*20-1);
+    for i in 0..=9 {//i*20,(i+1)*20-1
+        let url = format!("/lol-match-history/v1/products/lol/{}/matches?begIndex={}&endIndex={}",puuid,0,200);
         let match_s=client.get_match_list(url).await;
         if match_s.is_ok() {
             match_vec.extend(match_s.unwrap().get_simple_match(queue_id));
         }
+        break
     };
     Ok(match_vec)
 }
