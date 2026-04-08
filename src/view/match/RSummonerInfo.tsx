@@ -10,8 +10,10 @@ export default function ({sumInfo,rankPoint}:{sumInfo:SumReslut,rankPoint:string
   const [rate,setRate] = useState<string>('加载中');
   const [horse,setHorse] = useState<string>('加载中');
   useEffect(()=>{
+    setRate('加载中');
+    setScore(-2);
+    setHorse('加载中');
     getGameScore(sumInfo.puuid).then((scoreInfo:any) => {
-      
       const [score,horse,matchList] = [scoreInfo.score,scoreInfo.horse,scoreInfo.matchList]; 
       let winRate = matchList.length>0 ? (scoreInfo.winRate/matchList.length*100).toFixed(1):'0';
       setRate(winRate);

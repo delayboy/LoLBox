@@ -27,9 +27,9 @@ export default function ({ sumId, puuid, begIndex, endIndex, openSumDetailDrawer
   useEffect(() => {
     const fetchMatchList = async () => {
       if (specialMatch.current.puuid !== puuid) {
+        handleMatchList([], 'loading');
         const matchListTemp = await queryMatchList(puuid, '0', '200');
         specialMatch.current.puuid = puuid;
-        handleMatchList([], 'loading');
         specialMatch.current.matchList = matchListTemp;
       }
      

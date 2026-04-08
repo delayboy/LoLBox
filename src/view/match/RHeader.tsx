@@ -246,7 +246,7 @@ export default function ({page,handleChange,localSumId,sumId,matchMode,handleSel
           <div className='flex justify-between items-center' style={{width:'250px',height:'40px'}}>
             <img className='w-10' srcSet={icon}/>
             <p className="text-3xl font-bold text-zinc-600">HisBox</p>
-            <div className='webSiteDiv'onClick={() => {myOnOpen()}}>召唤师开盒</div>
+            <div id="TeamUnboxing" className='webSiteDiv'onClick={() => {myOnOpen()}}>召唤师开盒</div>
           </div>
         </div>
         {/*搜索*/}

@@ -153,165 +153,177 @@ export default function ({ notice, onCloseInput }: { notice: NoticeTypes, onClos
       const excludeChampDic:{[key:string]:string} = g_cfg.excludeChampDic;
       if(precentShow>0) return;
       setPercentShow(0);
-      if(currentId==0){
-        const templateSumInfo: lcuSummonerInfo = await invoke('get_cur_sum');
-        templateSumInfo.horse = '未执行检测';
-        templateSumInfo.score = 0;
-        setCurrentId(templateSumInfo.summonerId);
-      }
+      try{
+        if(currentId==0){
+          const templateSumInfo: lcuSummonerInfo = await invoke('get_cur_sum');
+          templateSumInfo.horse = '未执行检测';
+          templateSumInfo.score = 0;
+          setCurrentId(templateSumInfo.summonerId);
+        }
+    
+        if (notice?.gameflow == '"ChampSelect"') {
   
-      if (notice?.gameflow == '"ChampSelect"') {
-
-        const res: any = await invoke('get_json_res', { url: '/lol-champ-select/v1/session' });
-        const myTeam: any[] = res.myTeam;
-        console.log('team', myTeam);
-        let teamList = [];
-        let matchListList:MatchList[][] = [];
-        for (let i = 0; i < myTeam.length; i++) {
-          let sumId = myTeam[i].summonerId;
-          const summonerInfo: lcuSummonerInfo =await invoke('get_other_sum',{summonerId:String(sumId)});
-          summonerInfo.inWitchTeam = 1;//默认在第一队
-          let display = myTeam[i].assignedPosition;
-          if(display==undefined ||display==''){
-            display = summonerInfo.gameName;
-          }
-          summonerInfo.displayName = display;
-          summonerInfo.internalName = await get_profile_img(summonerInfo.profileIconId);
-          let matchList:MatchList[] = [];
-          let scoreInfo = await getGameScore(summonerInfo.puuid);//获取召唤师评分
-          [summonerInfo.score,summonerInfo.horse,matchList]=[scoreInfo.score,scoreInfo.horse,scoreInfo.matchList];
-          
-          let rateBase = matchList.length>0 ? (scoreInfo.winRate/matchList.length*100).toFixed(1):'0';
-          let [rank_solo]=summonerInfo.puuid===undefined?['不可查']:await getRankPoint(summonerInfo.puuid)
-          summonerInfo.winRate = rank_solo.split(' ')[0] +' '+ rateBase;
-          summonerInfo.summonerLevel = hasBlackListTeam(i,myTeam,scoreInfo.playWithSet);
-          summonerInfo.httpStatus = undefined;
-          teamList.push(summonerInfo);
-          matchListList.push(matchList);
-          setPercentShow(i);//同步显示进度条
-         
-        }
-        setTeamList(teamList);
-        setMatchListList(matchListList);
-        teamListToStr(teamList);
-
-      }
-      else if(notice.gameflow == '"InProgress"'){
-        const mactchSession:any = await invoke('get_json_res', { url: '/lol-gameflow/v1/session' });
-        const teamOne:any[] = mactchSession.gameData.teamOne;
-        const teamTwo:any[] = mactchSession.gameData.teamTwo;
-        let teamList = [];
-        let matchListList:MatchList[][] = [];
-        console.log('mactchSession', mactchSession);
-        for (let i = 0; i < teamOne.length; i++) {
-          let sumId = teamOne[i].summonerId;
-          const summonerInfo: lcuSummonerInfo =await invoke('get_other_sum',{summonerId:String(sumId)});
-          summonerInfo.inWitchTeam = 1;//第一队
-          let display = champDict[teamOne[i].championId].label;
-          if(excludeChampDic[display]!==undefined) display = excludeChampDic[display];
-          summonerInfo.displayName = display;
-          summonerInfo.internalName = champDict[teamOne[i].championId].img_path;
-          let matchList:MatchList[] = [];
-          let scoreInfo = await getGameScore(summonerInfo.puuid);//获取召唤师评分
-          [summonerInfo.score,summonerInfo.horse,matchList]=[scoreInfo.score,scoreInfo.horse,scoreInfo.matchList];
-          let rateBase = matchList.length>0 ? (scoreInfo.winRate/matchList.length*100).toFixed(1):'0';
-          let [rank_solo]=summonerInfo.puuid===undefined?['不可查']:await getRankPoint(summonerInfo.puuid)
-          summonerInfo.winRate = rank_solo.split(' ')[0] +' '+ rateBase;
-          summonerInfo.summonerLevel = hasBlackListTeam(i,teamOne,scoreInfo.playWithSet);
-          summonerInfo.httpStatus = teamOne[i].teamParticipantId;
-          teamList.push(summonerInfo);
-          matchListList.push(matchList);
-          setPercentShow(i);//同步显示进度条
-        }
-        for (let i = 0; i < teamTwo.length; i++) {
-          let sumId = teamTwo[i].summonerId;
-          const summonerInfo: lcuSummonerInfo =await invoke('get_other_sum',{summonerId:String(sumId)});
-          summonerInfo.inWitchTeam = 2;//第二队
-          let display = champDict[teamTwo[i].championId].label;
-          if(excludeChampDic[display]!==undefined) display = excludeChampDic[display];
-          summonerInfo.displayName = display;
-          summonerInfo.internalName = champDict[teamTwo[i].championId].img_path;
-          let matchList:MatchList[] = [];
-          let scoreInfo = await getGameScore(summonerInfo.puuid);//获取召唤师评分
-          [summonerInfo.score,summonerInfo.horse,matchList]=[scoreInfo.score,scoreInfo.horse,scoreInfo.matchList];
-          let rateBase = matchList.length>0 ? (scoreInfo.winRate/matchList.length*100).toFixed(1):'0';
-          let [rank_solo]=summonerInfo.puuid===undefined?['不可查']:await getRankPoint(summonerInfo.puuid)
-          summonerInfo.winRate = rank_solo.split(' ')[0] +' '+ rateBase;
-          summonerInfo.summonerLevel = hasBlackListTeam(i,teamTwo,scoreInfo.playWithSet);
-          summonerInfo.httpStatus = teamTwo[i].teamParticipantId;
-          if(summonerInfo.summonerLevel>=0) summonerInfo.summonerLevel = summonerInfo.summonerLevel+teamOne.length;
-          teamList.push(summonerInfo);
-          matchListList.push(matchList);
-          setPercentShow(i);//同步显示进度条
-          
-        }
-        setTeamList(teamList);
-        setMatchListList(matchListList);
-        teamListToStr(teamList);
-
-      }else if(notice.gameflow == 'clipboard'){
-        teamListToStr(teamList);
-      }
-      else{
-        toast({
-          description: "未进入游戏显示好友列表",
-          status: 'info',
-          duration: 1000,
-          containerStyle:{fontSize:'14px',minWidth:'0px',paddingBottom:'4px'}
-        })
-        let teamList = [];
-        let conv:any[] = await invoke('get_json_res', { url: '/lol-chat/v1/conversations' });
-        const conv2:any[] = await invoke('get_json_res', { url: '/lol-chat/v1/friends' });
-        conv = conv.concat(conv2);
-        let num = 0;
-        for (const chat of conv) {
-          if(chat.type=="chat"||chat.type==undefined){
-            const sumInfo:lcuSummonerInfo = chat;
-
-            sumInfo.gameName =chat.gameName;
-            sumInfo.tagLine = chat.gameTag;
-            sumInfo.displayName = chat.gameName+"#"+chat.gameTag;
-            if(chat.summonerId==undefined){
-              const tempSum:lcuSummonerInfo = await invoke('get_other_sum_by_name',{name:chat.gameName+"#"+chat.gameTag});
-              sumInfo.summonerId = tempSum.summonerId;
+          const res: any = await invoke('get_json_res', { url: '/lol-champ-select/v1/session' });
+          const myTeam: any[] = res.myTeam;
+          console.log('team', myTeam);
+          let teamList = [];
+          let matchListList:MatchList[][] = [];
+          for (let i = 0; i < myTeam.length; i++) {
+            let sumId = myTeam[i].summonerId;
+            const summonerInfo: lcuSummonerInfo =await invoke('get_other_sum',{summonerId:String(sumId)});
+            summonerInfo.inWitchTeam = 1;//默认在第一队
+            let display = myTeam[i].assignedPosition;
+            if(display==undefined ||display==''){
+              display = summonerInfo.gameName;
             }
-
-            sumInfo.inWitchTeam= chat.type=="chat"? 2:1;
-            sumInfo.score = 0;
-            sumInfo.summonerLevel = -1;
-            sumInfo.horse = chat.type=="chat"?'chat':chat.note;
-            teamList.push(sumInfo);
+            summonerInfo.displayName = display;
+            summonerInfo.internalName = await get_profile_img(summonerInfo.profileIconId);
+            let matchList:MatchList[] = [];
+            let scoreInfo = await getGameScore(summonerInfo.puuid);//获取召唤师评分
+            [summonerInfo.score,summonerInfo.horse,matchList]=[scoreInfo.score,scoreInfo.horse,scoreInfo.matchList];
+            
+            let rateBase = matchList.length>0 ? (scoreInfo.winRate/matchList.length*100).toFixed(1):'0';
+            let [rank_solo]=summonerInfo.puuid===undefined?['不可查']:await getRankPoint(summonerInfo.puuid)
+            summonerInfo.winRate = rank_solo.split(' ')[0] +' '+ rateBase;
+            summonerInfo.summonerLevel = hasBlackListTeam(i,myTeam,scoreInfo.playWithSet);
+            summonerInfo.httpStatus = undefined;
+            teamList.push(summonerInfo);
+            matchListList.push(matchList);
+            setPercentShow(i+1);//同步显示进度条
+            setTeamList([...teamList]);
+            setMatchListList([...matchListList]);
+           
           }
-          setPercentShow(num++);//同步显示进度条
-        }
-        
-        if(notice.sumId!=='0'&&notice.sumId!==''&&notice.sumId!==undefined){
-          const summonerInfo: lcuSummonerInfo = await invoke('get_other_sum',{summonerId:String(notice.sumId)});
-          teamList=[summonerInfo].concat(teamList);
-          summonerInfo.internalName = await get_profile_img(summonerInfo.profileIconId);//champDict['-1'].img_path;
-          let scoreInfo = await getGameScore(summonerInfo.puuid);//获取召唤师评分
-          const [score,horse,matchList]=[scoreInfo.score,scoreInfo.horse,scoreInfo.matchList];
-          summonerInfo.score = score;
-          summonerInfo.horse = horse;
-          summonerInfo.inWitchTeam = 1;
-          let rateBase = matchList.length>0 ? (scoreInfo.winRate/matchList.length*100).toFixed(1):'0';
-          let [rank_solo]=summonerInfo.puuid===undefined?['不可查']:await getRankPoint(summonerInfo.puuid)
-          summonerInfo.winRate = rank_solo.split(' ')[0] +' '+ rateBase;
           setTeamList(teamList);
-          setMatchListList([matchList]);
-          setPercentShow(num++);//同步显示进度条
+          setMatchListList(matchListList);
+          teamListToStr(teamList);
+  
+        }
+        else if(notice.gameflow == '"InProgress"'){
+          const mactchSession:any = await invoke('get_json_res', { url: '/lol-gameflow/v1/session' });
+          const teamOne:any[] = mactchSession.gameData.teamOne;
+          const teamTwo:any[] = mactchSession.gameData.teamTwo;
+          let teamList = [];
+          let matchListList:MatchList[][] = [];
+          console.log('mactchSession', mactchSession);
+          for (let i = 0; i < teamOne.length; i++) {
+            let sumId = teamOne[i].summonerId;
+            const summonerInfo: lcuSummonerInfo =await invoke('get_other_sum',{summonerId:String(sumId)});
+            summonerInfo.inWitchTeam = 1;//第一队
+            let display = champDict[teamOne[i].championId].label;
+            if(excludeChampDic[display]!==undefined) display = excludeChampDic[display];
+            summonerInfo.displayName = display;
+            summonerInfo.internalName = champDict[teamOne[i].championId].img_path;
+            let matchList:MatchList[] = [];
+            let scoreInfo = await getGameScore(summonerInfo.puuid);//获取召唤师评分
+            [summonerInfo.score,summonerInfo.horse,matchList]=[scoreInfo.score,scoreInfo.horse,scoreInfo.matchList];
+            let rateBase = matchList.length>0 ? (scoreInfo.winRate/matchList.length*100).toFixed(1):'0';
+            let [rank_solo]=summonerInfo.puuid===undefined?['不可查']:await getRankPoint(summonerInfo.puuid)
+            summonerInfo.winRate = rank_solo.split(' ')[0] +' '+ rateBase;
+            summonerInfo.summonerLevel = hasBlackListTeam(i,teamOne,scoreInfo.playWithSet);
+            summonerInfo.httpStatus = teamOne[i].teamParticipantId;
+            teamList.push(summonerInfo);
+            matchListList.push(matchList);
+            setPercentShow(i+1);//同步显示进度条
+            setTeamList([...teamList]);
+            setMatchListList([...matchListList]);
+          }
+          for (let i = 0; i < teamTwo.length; i++) {
+            let sumId = teamTwo[i].summonerId;
+            const summonerInfo: lcuSummonerInfo =await invoke('get_other_sum',{summonerId:String(sumId)});
+            summonerInfo.inWitchTeam = 2;//第二队
+            let display = champDict[teamTwo[i].championId].label;
+            if(excludeChampDic[display]!==undefined) display = excludeChampDic[display];
+            summonerInfo.displayName = display;
+            summonerInfo.internalName = champDict[teamTwo[i].championId].img_path;
+            let matchList:MatchList[] = [];
+            let scoreInfo = await getGameScore(summonerInfo.puuid);//获取召唤师评分
+            [summonerInfo.score,summonerInfo.horse,matchList]=[scoreInfo.score,scoreInfo.horse,scoreInfo.matchList];
+            let rateBase = matchList.length>0 ? (scoreInfo.winRate/matchList.length*100).toFixed(1):'0';
+            let [rank_solo]=summonerInfo.puuid===undefined?['不可查']:await getRankPoint(summonerInfo.puuid)
+            summonerInfo.winRate = rank_solo.split(' ')[0] +' '+ rateBase;
+            summonerInfo.summonerLevel = hasBlackListTeam(i,teamTwo,scoreInfo.playWithSet);
+            summonerInfo.httpStatus = teamTwo[i].teamParticipantId;
+            if(summonerInfo.summonerLevel>=0) summonerInfo.summonerLevel = summonerInfo.summonerLevel+teamOne.length;
+            teamList.push(summonerInfo);
+            matchListList.push(matchList);
+            setPercentShow(i+1);//同步显示进度条
+            setTeamList([...teamList]);
+            setMatchListList([...matchListList]);
+            
+          }
+          setTeamList(teamList);
+          setMatchListList(matchListList);
+          teamListToStr(teamList);
+  
+        }else if(notice.gameflow == 'clipboard'){
+          teamListToStr(teamList);
         }
         else{
-          setTeamList(teamList);
+          toast({
+            description: "未进入游戏显示好友列表",
+            status: 'info',
+            duration: 1000,
+            containerStyle:{fontSize:'14px',minWidth:'0px',paddingBottom:'4px'}
+          })
+          let teamList = [];
+          let conv:any[] = await invoke('get_json_res', { url: '/lol-chat/v1/conversations' });
+          const conv2:any[] = await invoke('get_json_res', { url: '/lol-chat/v1/friends' });
+          conv = conv.concat(conv2);
+          let num = 0;
+          for (const chat of conv) {
+            if(chat.type=="chat"||chat.type==undefined){
+              const sumInfo:lcuSummonerInfo = chat;
+  
+              sumInfo.gameName =chat.gameName;
+              sumInfo.tagLine = chat.gameTag;
+              sumInfo.displayName = chat.gameName+"#"+chat.gameTag;
+              if(chat.summonerId==undefined){
+                const tempSum:lcuSummonerInfo = await invoke('get_other_sum_by_name',{name:chat.gameName+"#"+chat.gameTag});
+                sumInfo.summonerId = tempSum.summonerId;
+              }
+  
+              sumInfo.inWitchTeam= chat.type=="chat"? 2:1;
+              sumInfo.score = 0;
+              sumInfo.summonerLevel = -1;
+              sumInfo.horse = chat.type=="chat"?'chat':chat.note;
+              teamList.push(sumInfo);
+            }
+            setPercentShow(++num);//同步显示进度条
+          }
+          
+          if(notice.sumId!=='0'&&notice.sumId!==''&&notice.sumId!==undefined){
+            const summonerInfo: lcuSummonerInfo = await invoke('get_other_sum',{summonerId:String(notice.sumId)});
+            teamList=[summonerInfo].concat(teamList);
+            summonerInfo.internalName = await get_profile_img(summonerInfo.profileIconId);//champDict['-1'].img_path;
+            let scoreInfo = await getGameScore(summonerInfo.puuid);//获取召唤师评分
+            const [score,horse,matchList]=[scoreInfo.score,scoreInfo.horse,scoreInfo.matchList];
+            summonerInfo.score = score;
+            summonerInfo.horse = horse;
+            summonerInfo.inWitchTeam = 1;
+            let rateBase = matchList.length>0 ? (scoreInfo.winRate/matchList.length*100).toFixed(1):'0';
+            let [rank_solo]=summonerInfo.puuid===undefined?['不可查']:await getRankPoint(summonerInfo.puuid)
+            summonerInfo.winRate = rank_solo.split(' ')[0] +' '+ rateBase;
+            setTeamList(teamList);
+            setMatchListList([matchList]);
+            setPercentShow(++num);//同步显示进度条
+          }
+          else{
+            setTeamList(teamList);
+          }
+          
         }
-        
+        setPercentShow(-1);
+      }catch(e){
+        setPercentShow(-10);
+        console.error(e);
       }
-      setPercentShow(-1);
+      
     })();
 
   }, [notice])
 
-  const buttonEle =  <Button id="showDetailButton" onClick={() => { !isOpen&&teamList.length>0?onOpen():console.log("fail open",teamList);setPercentShow(-2); }}
+  const buttonEle =  <Button id="showDetailButton" onClick={() => { !isOpen&&teamList.length>0?onOpen():console.log("fail open",teamList); }}//setPercentShow(-2);
   size={'sm'} colorScheme='twitter' style={{ fontWeight: '400', height: '30px' }}>详情</Button>
   const mapMatch = (index:number) =>{
      //console.log("m",index)
@@ -404,7 +416,7 @@ export default function ({ notice, onCloseInput }: { notice: NoticeTypes, onClos
       </div>
       <Modal isOpen={isOpen} onClose={onClose} size={'full'} autoFocus={false}>
         <ModalOverlay />
-        <ModalContent style={{marginTop:'5px',width:'1000px',height:'640px',minHeight:'500px'}}>
+        <ModalContent style={{marginTop:'5px',width:'1050px',height:'640px',minHeight:'500px'}}>
           <ModalBody>
            <div>
             {avarageScore.map((value,index)=>{
