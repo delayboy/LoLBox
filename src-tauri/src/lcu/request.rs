@@ -21,7 +21,7 @@ pub(crate) fn build_reqwest_client(auth_token: Option<String>) -> reqwest::Clien
     reqwest::ClientBuilder::new()
         .add_root_certificate(cert)
         .default_headers(headers)
-        .timeout(Duration::from_millis(3000))
+        .timeout(Duration::from_millis(30000))//设置超时30s
         .danger_accept_invalid_certs(true)
         //.proxy(Proxy::all("http://127.0.0.1:8888").expect("Invalid proxy URL"))
         .no_proxy() // 禁用代理

@@ -84,8 +84,15 @@ pub async fn get_other_sum(summoner_id:String) -> Result<Value, String> {
         REST_CLIENT.as_ref().ok_or("REST_CLIENT not initialized")?
     };
     let url = format!("/lol-summoner/v1/summoners/{}", summoner_id).to_string();
-    let res =  client.get(url).await.unwrap();
-    Ok(res)
+    //let res =  client.get(url).await.unwrap();
+    //Ok(res)
+    match client.get(url).await {
+        Ok(res) => Ok(res),
+        Err(_) => {
+            // 返回空JSON对象
+            Ok(serde_json::json!({}))
+        }
+    }
 }
 #[command]
 pub async fn get_other_sum_by_name(name:String) -> Result<Value, String> {
@@ -131,7 +138,10 @@ pub async fn get_match_list(puuid:String,beg_index:String,end_index:String) -> R
     let url = format!("/lol-match-history/v1/products/lol/{}/matches?begIndex={}&endIndex={}", puuid,beg_index,end_index).to_string();
     let res = match client.get(url).await {
         Ok(result) => result,
-        Err(err) => return Err(err.to_string()),
+        Err(err) => {
+            println!("{}",err.to_string());
+            return Err(err.to_string())
+        }
     };
     Ok(res)
 }

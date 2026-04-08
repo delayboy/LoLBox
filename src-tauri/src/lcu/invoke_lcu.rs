@@ -18,7 +18,7 @@ impl RESTClient {
         })
     }
     pub async fn get_binary(&self, endpoint: String)->  Result<Vec<u8>, reqwest::Error> {
-        
+        //println!("{}",format!("[binary]https://127.0.0.1:{}{}", self.port, endpoint));
         let response: reqwest::Response = self
             .reqwest_client
             .get(format!("https://127.0.0.1:{}{}", self.port, endpoint))
@@ -35,7 +35,7 @@ impl RESTClient {
     }
     // body: Vec<u8> 可用来传递二进制数组
     pub async fn post(&self, endpoint: String,body:String) -> Result<Vec<u8>, reqwest::Error> {
-        
+        println!("{}",format!("[post]https://127.0.0.1:{}{}", self.port, endpoint));
         let response: reqwest::Response = self
             .reqwest_client
             .post(format!("https://127.0.0.1:{}{}", self.port, endpoint))
@@ -46,13 +46,13 @@ impl RESTClient {
         let bytes = response.bytes().await?;
         //let mut file = File::create("output_image.png")?;
         //copy(&mut bytes.as_ref(), &mut file)?
-        println!("{}",format!("https://127.0.0.1:{}{}", self.port, endpoint));
+
         Ok(bytes.to_vec())   
        
     }
 
     pub async fn get(&self, endpoint: String) -> Result<serde_json::Value, reqwest::Error> {
-        
+        println!("{}",format!("[get]https://127.0.0.1:{}{}", self.port, endpoint));
         let req: serde_json::Value = self
             .reqwest_client
             .get(format!("https://127.0.0.1:{}{}", self.port, endpoint))
@@ -60,12 +60,13 @@ impl RESTClient {
             .await?
             .json()
             .await?;
-        println!("{}",format!("https://127.0.0.1:{}{}", self.port, endpoint));
+    
         Ok(req)
        
     }
 
     pub async fn get_match_list(&self, endpoint: String) -> Result<MatchStruct, reqwest::Error> {
+        println!("{}",format!("[get_match_list]https://127.0.0.1:{}{}", self.port, endpoint));
         let req:MatchStruct = self
             .reqwest_client
             .get(format!("https://127.0.0.1:{}{}", self.port, endpoint))
