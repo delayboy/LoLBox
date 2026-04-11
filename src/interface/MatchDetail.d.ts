@@ -256,6 +256,7 @@ export interface SummonerDetailInfo {
   teamType: number;
   champLevel: number;
   champImgUrl: string;
+  banChampImgUrl: string;
   spell1Id: string;
   spell2Id: string;
   item0: string;

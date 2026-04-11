@@ -221,6 +221,7 @@ export interface MatchList {
   assists: number;
   matchTime: string;
   gameModel: string;
+  damagePercent: string;
 }
 
 export interface simpleMatchTypes {

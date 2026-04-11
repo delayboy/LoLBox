@@ -37,14 +37,14 @@ export default function ({isLeft,detailInfo,showTypeKey,showTypeIndex,querySumDe
 
   const itemDiv = detailInfo.map((summoner,index) => {
     const iconImgEle = summoner.iconList.map((icon:string,index:number) => {
-      return getIconEle(index+1,icon)
+      return getIconEle(index+2,icon)
     })
     if (summoner.isMvp && summoner.isWin){
-      iconImgEle.unshift(getIconEle(0,'mvp'))
+      iconImgEle.unshift(getIconEle(1,'mvp'))
     }else if (summoner.isMvp && !summoner.isWin){
-      iconImgEle.unshift(getIconEle(0,'svp'))
+      iconImgEle.unshift(getIconEle(1,'svp'))
     }
-
+    iconImgEle.unshift(getIconEle(0,summoner.banChampImgUrl))
     return (
       <div key={index} onClick={() => {queryDetail(index)}}>
         <div className='summonerItem'>
@@ -103,11 +103,37 @@ export default function ({isLeft,detailInfo,showTypeKey,showTypeIndex,querySumDe
 
 // 获取icon元素
 const getIconEle = (index:number,key:string) => {
-  const imgUrl = new URL(`/src/assets/matchImage/${key}.png`, import.meta.url).href
+  let imgUrl = new URL(`/src/assets/matchImage/${key}.png`, import.meta.url).href
+  let otherStyle={};
+  if(index==0) {
+    otherStyle={
+      height:'20px',
+      marginLeft:'-1px',
+      marginTop:'-4px',
+      background: 'linear-gradient(135deg, transparent 45%, rgba(255,0,0,0.7) 45%, rgba(255,0,0,0.7) 55%, transparent 55%)',
+      pointerEvents: 'none', // 让斜杠不干扰点击
+      borderRadius: '3px', // 如果头像有圆角
+    };
+    imgUrl = key;//如果是首个图标则显示ban位
+  }
   return(
       <Tooltip key={index} label={iconDict[key]} placement='top-start' fontSize={13}
                offset={[-1,6]} bg='#edf2f7' color='#a1a1aa'>
-        <img src={imgUrl} className='matchIconImg'/>
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <img src={imgUrl} style={otherStyle} className='matchIconImg'/>
+          {index==0 && (  // 是否禁用的条件
+            <div style={{
+              position: 'absolute',
+              top: '-1px',
+              left: '-1px',
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(135deg, transparent 45%, rgb(187 187 187 / 70%) 45%, rgb(141 141 141 / 70%) 55%, transparent 55%)',
+              pointerEvents: 'none', // 让斜杠不干扰点击
+              borderRadius: '3px', // 如果头像有圆角
+            }} />
+          )}
+        </div>
       </Tooltip>
     )
 }

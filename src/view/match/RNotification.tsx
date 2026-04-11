@@ -361,7 +361,7 @@ export default function ({ notice, onCloseInput }: { notice: NoticeTypes, onClos
              size={'sm'}
              variant={match.isWin?'NInfo':'NError'}
              style={{height:'27px',width:'68px',
-               justifyContent:'center',fontSize:'12px',flexDirection:'column'}}>
+               justifyContent:'center',background:`linear-gradient(90deg, ${match.isWin?'rgb(185 218 250)':'rgb(255 214 214)'} ${match.damagePercent}%, ${match.isWin?'rgb(214, 235, 255)':'rgb(253, 234, 234)'} ${match.damagePercent}%)`,fontSize:'12px',flexDirection:'column'}}>
 
              <p>{match.gameModel[0]}-{match.kills}-{match.deaths}-{match.assists}</p>
              <p style={{fontSize:'9px',width:'100%',textAlign:'right'}}>{match.matchTime}</p>

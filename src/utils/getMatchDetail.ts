@@ -90,6 +90,17 @@ export class MatchDetails {
     participantsInfo.headerInfo = titleList
     return participantsInfo
   }
+  private getImgUrl = (champId:number):string => {
+    let img_url = champDict['-1'].img_path;
+      if (champDict[champId]!==undefined){
+        img_url = champDict[champId].img_path;
+  
+      }else{
+        console.log("不存在英雄",champId)
+      }
+  
+    return img_url
+  }
   // 解析对局数据
   private analyticalData  = (gameDetail:GameDetailedInfo,participant:Participant,nameList: {name: string, summonerId: number},gameId:string,maxMatchData:MaxMatchData,sumId:number):SummonerDetailInfo => {
     var iconList = this.getIconList(participant.stats,maxMatchData)
@@ -108,8 +119,15 @@ export class MatchDetails {
     if (participant.stats.largestKillingSpree>=8){
       iconList.push('god')
     }
-    let role =  participant.timeline.lane+'-'+participant.timeline.role;
+    let role =  {damagePercent:'0',roleIndex:-1,value:participant.timeline.lane+'-'+participant.timeline.role};
     let score = Math.round(analyseSingleMatch(new Map(),gameDetail,participant,gameDetail.gameDuration,role));
+    let banChampion:number = -1;
+    for(const team of gameDetail.teams){
+      if(team.teamId==participant.teamId){
+        if(role.roleIndex<team.bans.length)banChampion=team.bans[role.roleIndex].championId;
+        break;
+      }
+    }
     var showDataDict:ShowDataTypes = this.getShowDataPercent(maxMatchData,{totalDamageDealtToChampions:participant.stats.totalDamageDealtToChampions,
       totalDamageTaken:participant.stats.totalDamageTaken,
       goldEarned:participant.stats.goldEarned,
@@ -118,13 +136,8 @@ export class MatchDetails {
       score:score,
     })
     // `images/lol/act/img/champion/${champDict[participant.championId].alias}.png`
-    let img_url = champDict['-1'].img_path;
-    if (champDict[participant.championId]!==undefined){
-      img_url = champDict[participant.championId].img_path;
-
-    }else{
-      console.log("不存在英雄",participant.championId)
-    }
+    let img_url = this.getImgUrl(participant.championId);
+    let ban_img_url = this.getImgUrl(banChampion);
     return{
       name: nameList.name,
       gameId:gameId,
@@ -133,6 +146,7 @@ export class MatchDetails {
       teamType: participant.teamId,
       champLevel:participant.stats.champLevel,
       champImgUrl: img_url,
+      banChampImgUrl:ban_img_url,
       spell1Id:getspellImgUrl(participant.spell1Id),
       spell2Id:getspellImgUrl(participant.spell2Id),
       item0:getItemImgUrl(participant.stats.item0),

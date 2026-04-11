@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api';
 import {LcuMatchList,MatchList,Game, Participant, Stat,MyGameScoreInfo} from "../interface/MatchInfo";
 import {queryGameType} from "./tool";
 import { GameDetailedInfo } from '../interface/MatchDetail';
-
+type Mutable<T> = { value: T,roleIndex:number,damagePercent:string };
 // 根据召唤师ID查询战绩
 const getMatchList = async (puuid: string, begIndex: string, endIndex: string): Promise<LcuMatchList|null> => {
   try {
@@ -38,7 +38,9 @@ const getSimpleMatch = (match: Game,gameModel:string):MatchList => {
     // 游戏时间
     matchTime: timestampToDate(match.gameCreation),
     // 游戏模式
-    gameModel:gameModel
+    gameModel:gameModel,
+
+    damagePercent: '0'
   }
 }
 
@@ -116,11 +118,11 @@ export const getGameScore = async (puuid:string):Promise<MyGameScoreInfo> => {
   let winRate = 0;
   for (const modeGame of classicModeGames) {
     const gamedetail:GameDetailedInfo = await invoke('get_match_detail',{gameId:String(modeGame.gameId)});
-    let role =  modeGame.participants[0].timeline.lane+'-'+modeGame.participants[0].timeline.role;
-    let beforeValue = roleMap.get(role);
+    let role: Mutable<string> = {damagePercent:'0',roleIndex:0,value:modeGame.participants[0].timeline.lane+'-'+modeGame.participants[0].timeline.role};
+    let nowScore= analyseSingleMatch(playWithSet,gamedetail,modeGame.participants[0],modeGame.gameDuration,role);
+    let beforeValue = roleMap.get(role.value);
     beforeValue = beforeValue==undefined?0:beforeValue;
-    roleMap.set(role,beforeValue+1);
-    let nowScore= analyseSingleMatch(playWithSet,gamedetail,modeGame.participants[0],modeGame.gameDuration,role)
+    roleMap.set(role.value,beforeValue+1);
     gameScore +=nowScore;
     let tempKad = `${modeGame.participants[0].stats.kills}/${modeGame.participants[0].stats.deaths}/${modeGame.participants[0].stats.assists}  `
     let dead = modeGame.participants[0].stats.deaths;
@@ -131,6 +133,7 @@ export const getGameScore = async (puuid:string):Promise<MyGameScoreInfo> => {
     const gameModel = `${queryGameType(modeGame.queueId)}[${nowScore.toFixed(1)}]`;
     const simple_match = getSimpleMatch(modeGame,gameModel);
     if(simple_match.isWin) winRate += 1;
+    simple_match.damagePercent=role.damagePercent;
     simpleMatchList.push(simple_match)
   }
 
@@ -141,7 +144,7 @@ export const getGameScore = async (puuid:string):Promise<MyGameScoreInfo> => {
 }
 
 // 通过分析单场数据得出单场得分情况
-export const analyseSingleMatch = (playWithSet:Map<number,number>,gamedetail:GameDetailedInfo,now:Participant,duration:number,role:string) => {
+export const analyseSingleMatch = (playWithSet:Map<number,number>,gamedetail:GameDetailedInfo,now:Participant,duration:number,role:Mutable<string>) => {
   let totalDamage=0.1;
   let totalKill = 0.1;//防止除0
   let totalVision =0.1;
@@ -155,7 +158,7 @@ export const analyseSingleMatch = (playWithSet:Map<number,number>,gamedetail:Gam
         let old_num = playWithSet.get(parIdentity.player.summonerId)
         if(old_num==undefined) old_num=0;
         playWithSet.set(parIdentity.player.summonerId,old_num+1);
-      }
+      }else role.roleIndex=i>=5?i-5:i;//获取该召唤师在本团队里的相对位置
 
       totalDamage+=par.stats.totalDamageDealtToChampions;
       totalKill+=par.stats.kills;
@@ -164,6 +167,11 @@ export const analyseSingleMatch = (playWithSet:Map<number,number>,gamedetail:Gam
     }
     
   }
+  if(role.roleIndex==0)role.value="TOP-SOLO";
+  else if(role.roleIndex==1)role.value="JUNGLE-NONE";
+  else if(role.roleIndex==2)role.value="MIDDLE-SOLO";
+  else if(role.roleIndex==3)role.value="BOTTOM-CARRY";
+  else if(role.roleIndex==4)role.value="BOTTOM-SUPPORT";
   let match:Stat = now.stats;
   let score = 0
   if (match.firstBloodKill){score+=10} // 一血 加10分
@@ -187,7 +195,7 @@ export const analyseSingleMatch = (playWithSet:Map<number,number>,gamedetail:Gam
   score += match.visionScore/duration * 60//每分钟视野得分
   score += (match.kills+match.assists)/totalKill*10 //参团率 辅助看助攻禁止k头
   score += (match.totalDamageDealtToChampions)/totalDamage*10 //参团率 c位看出伤
-  if(role.indexOf("SUPPORT")!==-1) {
+  if(role.value.indexOf("SUPPORT")!==-1) {
     score += match['assists']*0.55;
     //score += match.visionScore/totalVision * 10//视野得分占比
     
@@ -196,6 +204,8 @@ export const analyseSingleMatch = (playWithSet:Map<number,number>,gamedetail:Gam
     
     score += match['assists']*0.5;
   }
+  //一个人能顶替2个人的输出就很厉害了，所以乘250的倍数，相当于输出占全队伤害的2/5
+  role.damagePercent=((match.totalDamageDealtToChampions)/totalDamage*250).toFixed(1);
 
   return score
 }
