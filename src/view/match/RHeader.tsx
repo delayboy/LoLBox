@@ -109,7 +109,7 @@ export default function ({page,handleChange,localSumId,sumId,matchMode,handleSel
 
     const binaryData = new Uint8Array(res);
     const binaryString = binaryData.reduce((data, byte) => data + String.fromCharCode(byte), '');
-    console.log("game_flow",binaryString,g_cfg);
+    //console.log("game_flow",binaryString,g_cfg);
     if(binaryString=='"ReadyCheck"'){
       if(g_cfg.muted){
        console.log("跳过自动对局接收");

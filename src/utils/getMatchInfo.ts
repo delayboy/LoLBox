@@ -92,6 +92,10 @@ export const getGameScore = async (puuid:string):Promise<MyGameScoreInfo> => {
         return {score:-1,horse:'神秘人',winRate:0,matchList:[],playWithSet:playWithSet};
       }
     }
+    if(!matchList?.games) {//如果接口异常就继续尝试，page加5限制尝试次数
+      page += 5;
+      continue;
+    }
     gameLen = matchList.games.gameCount;
     for (const matchListElement of matchList.games.games) {
       if(matchListElement.queueId==420||matchListElement.queueId==440||matchListElement.queueId==430){
